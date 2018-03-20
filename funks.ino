@@ -5,9 +5,12 @@ void print_buff() {
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 bool get_char() {
-  int c = Serial.read();
-  Serial.println(c);
+  int c = Serial1.read();
+  
   if ( c < 0) return 0;
+  Serial.print(c, HEX);
+  Serial.print(" ");
+  if (charnum % 10 == 0)Serial.println();
   for (int i = 0; i < BUFFER_LEN - 1; i++) buffer_[i] = buffer_[i + 1];
   buffer_[BUFFER_LEN - 1] = c;
   charnum += 1;
@@ -97,10 +100,10 @@ void send_ans() {
 //  Serial.println("sending answ");
   struct ctrl s;
   s.header.marker = 0xfeaa;
-  s.header.sz = 0x000c;
+  s.header.sz = 0x000b;
   s.header.src = 0x00;
   s.header.dst = 0x00;
-  s.header.id = 0x01;
+  s.header.id = 0x03;
   s.header.version = 0x01;
   s.engine = 0x00;
   s.crc = protocol_crc_calc ((byte*)&s, sizeof(s)-2);
@@ -120,16 +123,21 @@ int limit(int p) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 bool check_answer() {
-  if (!check_header(ANS_CONTROL_PACK_LEN, ANS_CONTROL_PACK_ID, ANS_CONTROL_PACK_VER)) {
-    Serial.print("Wrong packet");
+  if (!check_header(12, ANS_CONTROL_PACK_ID, ANS_CONTROL_PACK_VER)) {
+//    Serial.print(sizeof(ans));
     return 0;
   }
-  return 0;
-  if (!check_crc(ANS_CONTROL_PACK_LEN)) {
-    Serial.print("Wrong packet");
+  else{
+    Serial.print("got header");
+  }
+  
+//  return 0;
+  if (!check_crc(12)) {
+//    Serial.print("Wrong packet");
     return 0;
   }
   Serial.print("Got answer packet");
+  digitalWrite(led,HIGH);
 
   struct ans* a = (struct ans*)(buffer_ + BUFFER_LEN - ANS_CONTROL_PACK_LEN - CRC_SIZE);
   uint32_t ans_up = a->uptime;
@@ -147,6 +155,7 @@ bool check_answer() {
   Serial.println(ans_right_ofs);
   Serial.println(ans_enabled);
   Serial.println(ans_npower);
+  digitalWrite(led,LOW);
 
   return 1;
 }

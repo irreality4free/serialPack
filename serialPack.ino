@@ -16,13 +16,14 @@
 #define HEADER_SIZE 8
 #define UAV_ADDRESS 0
 #define BIM_ADDRESS 0
-#define MARKER 0xAEFF
+#define MARKER 0xFEAA
 
 
 #define ANS_CONTROL_PACK_LEN  1
-#define ANS_CONTROL_PACK_ID   3
+#define ANS_CONTROL_PACK_ID   2
 #define ANS_CONTROL_PACK_VER  1
 
+int led =7;
 char buffer_[BUFFER_LEN];
 int pos_cmd[2];
 int pos_fb[2];
@@ -113,12 +114,7 @@ struct uav_bim_status_t
 
 
 
-#pragma pack(push,1)
-struct uav_bim_control_t
-{
-  uint8_t engine;
-};
-#pragma pack(pop)#pragma pack(push,1)
+
 
 
 
@@ -157,31 +153,33 @@ struct ans
 
 
 
-
 void setup() {
   Serial.begin(9600); // set the baud rate
   Serial1.begin(57600);
   Serial.println("Ready"); // print "Ready" once
+  pinMode(led, OUTPUT);
 }
 
 
+
+
+
+long t = 0;
 void loop() {
-send_ans();
-//Serial.write("char");
-//if (Serial.available()){
-//int r = Serial.read();
-//Serial.println(r);
-//}
-//Serial.println(get_char());
-//Serial.println(get_char());
-//  if (get_char()) {
-//
-//    if (check_answer()) {
-//
-//      Serial.println("ch ans if");
-//    }
+  if (t < millis())
+  {
+    send_ans1();
+    t = millis() + 100;
+  }
+
+  if (get_char()) {
+
+    if (check_answer()) {
+
+      Serial.println("ch ans if");
+    }
 
 
-//}
-delay(100);
+  }
+//  delay(100);
 }
